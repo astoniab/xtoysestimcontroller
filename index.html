@@ -1,0 +1,453 @@
+<html>
+<head>
+<style type="text/css">
+    input[type='range'] {
+      overflow: hidden;
+      background-color: #9a905d;
+    }
+</style>
+</head>
+<body>
+<datalist id="balancemarkers">
+  <option value="0" label="L"></option>
+  <option value="100"></option>
+  <option value="200" label="R"></option>
+</datalist>
+<div class="container">
+  <h1>XToys E-Stim Controller</h1>
+  <hr>
+  <h3>Settings</h3>
+  <div class="row">
+    <div class="form">
+		<div class="row col">
+		  <div class="form-group col-3">
+				<label class="form-label">Master Volume</label>
+				<div class="input-group">
+					<input class="form-control" type="number" id="mastervolume" min="0" max="100" value="0">
+				</div>
+		  </div>
+		  <div class="form-group col-3">
+			<label class="form-label">Set Active Mode</label>
+			<select class="form-control" id="currentmode">
+				<option value="0" select>Idle</option>
+				<option value="1">Counted Stroke 1</option>
+				<option value="2">Counted Stroke 2</option>
+				<option value="3">Stroke 1</option>
+				<option value="4">Stroke 2</option>
+				<option value="5">Teasing 1</option>
+				<option value="6">Teasing 2</option>
+				<option value="7">Edge 1</option>
+				<option value="8">Edge 2</option>
+				<option value="9">Pain 1</option>
+				<option value="10">Pain 2</option>
+				<option value="11">User 1</option>
+				<option value="12">User 2</option>
+				<option value="13">User 3</option>
+				<option value="14">User 4</option>
+				<option value="15">User 5</option>
+				<option value="16">User 6</option>
+				<option value="17">User 7</option>
+				<option value="18">User 8</option>
+				<option value="19">User 9</option>
+				<option value="10">User 10</option>
+			</select>
+		  </div>
+	  </div>
+	  <div class="row form-group">
+		<div class="col-6 text-center">
+				<input class="align-bottom" type="button" id="updatemaster" value="Update">
+		</div>
+	  </div>
+	  <div class="form-group col-12">
+		<table class="table table-striped table-bordered">
+			<thead>
+				<tr>
+					<th>Mode</th>
+					<th>Stroke Type</th>
+					<th title="A Comma Separated List of Frequencies">Frequencies</th>
+					<th title="Strokes Per Minute">SPM</th>
+					<th title="Minimum Position">Min Pos</th>
+					<th title="Maximum Position">Max Pos</th>
+					<th>Volume</th>
+					<th>Balance</th>
+					<th title="Amplitude shift between left and right channels in degrees (-180 to 180)">Amp Shift</th>
+					<th title="Phase shift between left and right channels in degrees (-180 to 180)">Phase Shift</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th title="Virtual Succubus Rhythm Events">Counted Stroke 1</th>
+					<td><select id="stroketype1"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency1" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm1" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos1" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos1" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume1" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance1" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift1" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift1" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>Counted Stroke 2</th>
+					<td><select id="stroketype2"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency2" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm2" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos2" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos2" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume2" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance2" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift2" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift2" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th title="Vritual Succubus Stroker/Thruster Events">Stroke 1</th>
+					<td><select id="stroketype3"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency3" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm3" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos3" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos3" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume3" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance3" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift3" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift3" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>Stroke 2</th>
+					<td><select id="stroketype4"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency4" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm4" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos4" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos4" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume4" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance4" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift4" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift4" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th title="Virtual Succubus Tease Events">Teasing 1</th>
+					<td><select id="stroketype5"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency5" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm5" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos5" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos5" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume5" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance5" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift5" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift5" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>Teasing 2</th>
+					<td><select id="stroketype6"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency6" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm6" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos6" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos6" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume6" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance6" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift6" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift6" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th title="Virtual Succubus Edge Events">Edge 1</th>
+					<td><select id="stroketype7"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency7" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm7" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos7" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos7" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume7" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance7" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift7" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift7" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th title="Virtual Succubus Ridge The Edge Events">Edge 2</th>
+					<td><select id="stroketype8"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency8" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm8" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos8" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos8" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume8" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance8" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift8" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift8" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th title="Virtual Succubus Punish Events">Pain 1</th>
+					<td><select id="stroketype9"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency9" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm9" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos9" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos9" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume9" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance9" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift9" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift9" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>Pain 2</th>
+					<td><select id="stroketype10"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency10" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm10" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos10" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos10" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume10" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance10" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift10" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift10" min="-180" max="180" value=""></td>
+				</tr>
+			</tbody>
+		</table>
+	  </div>
+	  <div class="form-group row">
+		<div class="col-12 text-center">
+			<input type="button" value="Update Config" id="updateconfig">
+		</div>
+	  </div>
+	  <div class="form-group col-12">
+		<table class="table table-striped table-bordered">
+			<thead>
+				<tr>
+					<th colspan="10" class="text-center">User Modes</th>
+				</tr>
+			</thead>
+			<thead>
+				<tr>
+					<th>Mode</th>
+					<th>Stroke Type</th>
+					<th title="A Comma Separated List of Frequencies">Frequencies</th>
+					<th title="Strokes Per Minute">SPM</th>
+					<th title="Minimum Position">Min Pos</th>
+					<th title="Maximum Position">Max Pos</th>
+					<th>Volume</th>
+					<th>Balance</th>
+					<th title="Amplitude shift between left and right channels in degrees (-180 to 180)">Amp Shift</th>
+					<th title="Phase shift between left and right channels in degrees (-180 to 180)">Phase Shift</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th>User 1</th>
+					<td><select id="stroketype11"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency11" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm11" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos11" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos11" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume11" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance11" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift11" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift11" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 2</th>
+					<td><select id="stroketype12"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency12" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm12" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos12" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos12" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume12" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance12" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift12" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift12" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 3</th>
+					<td><select id="stroketype13"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency13" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm13" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos13" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos13" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume13" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance13" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift13" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift13" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 4</th>
+					<td><select id="stroketype14"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency14" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm14" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos14" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos14" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume14" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance14" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift14" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift14" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 5</th>
+					<td><select id="stroketype15"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency15" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm15" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos15" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos15" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume15" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance15" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift15" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift15" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 6</th>
+					<td><select id="stroketype16"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency16" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm16" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos16" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos16" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume16" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance16" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift16" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift16" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 7</th>
+					<td><select id="stroketype17"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency17" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm17" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos17" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos17" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume17" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance17" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift17" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift17" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 8</th>
+					<td><select id="stroketype18"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency18" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm18" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos18" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos18" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume18" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance18" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift18" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift18" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 9</th>
+					<td><select id="stroketype19"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency19" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm19" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos19" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos19" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume19" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance19" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift19" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift19" min="-180" max="180" value=""></td>
+				</tr>
+				<tr>
+					<th>User 10</th>
+					<td><select id="stroketype20"><option value="0">Frequency</option><option value="1">Amplitude</option></select></td>
+					<td><input type="text" id="frequency20" value="" title="Comma separated list.  Don't use spaces"></td>
+					<td><input type="number" id="spm20" min="0" max="10000" value=""></td>
+					<td><input type="number" id="minpos20" min="0" max="100" value=""></td>
+					<td><input type="number" id="maxpos20" min="0" max="100" value=""></td>
+					<td><input type="number" id="volume20" min="0" max="100" value=""></td>
+					<td><input type="range" id="channelbalance20" min="0" max="200" step="1" list="balancemarkers" value="" title="<-L | R->"></td>
+					<td><input type="number" id="ampshift20" min="-180" max="180" value=""></td>
+					<td><input type="number" id="phaseshift20" min="-180" max="180" value=""></td>
+				</tr>
+			</tbody>
+		</table>
+	  </div>
+	  <div class="form-group row">
+		<div class="col-12 text-center">
+			<input type="button" value="Update Config" id="updateconfig2">
+		</div>
+	  </div>
+
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+  integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"
+  integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+  integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+  integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script>
+  
+  function clickUpdateMaster(e) {
+	let url=new URL(document.URL);
+	let configurl=url.protocol+'//'+url.host+'/control';
+	let sp=new URLSearchParams();
+	
+	sp.set('action','setvolume');
+	sp.set('volume',document.getElementById('mastervolume').value);
+	$.ajax(configurl+'?'+sp.toString());
+	
+	sp=new URLSearchParams();
+	sp.set('action','setmode');
+	sp.set('mode',document.getElementById('currentmode').value);
+	$.ajax(configurl+'?'+sp.toString());
+  }
+  
+  function clickUpdateConfig(e) {
+	let url=new URL(document.URL);
+	let configurl=url.protocol+'//'+url.host+'/control';
+	
+	for(let i=1; i<=20; i++)
+	{
+		let sp=new URLSearchParams();
+		sp.set('action','strokeconfig');
+		sp.set('mode',i);
+		sp.set('stroketype',document.getElementById('stroketype'+i).value);
+		sp.set('frequency',document.getElementById('frequency'+i).value);
+		sp.set('spm',document.getElementById('spm'+i).value);
+		sp.set('minpos',document.getElementById('minpos'+i).value);
+		sp.set('maxpos',document.getElementById('maxpos'+i).value);
+		sp.set('volume',document.getElementById('volume'+i).value);
+		sp.set('channelbalance',document.getElementById('channelbalance'+i).value);
+		sp.set('ampshift',document.getElementById('ampshift'+i).value);
+		sp.set('phaseshift',document.getElementById('phaseshift'+i).value);
+		
+		$.ajax(configurl+'?'+sp.toString());
+	}
+	
+	$.ajax(configurl+'?action=saveconfig');
+  }
+  
+  function refreshConfig() {
+	let url=new URL(document.URL);
+	let configurl=url.protocol+'//'+url.host+'/control?action=getconfig';
+	
+	$.ajax(configurl).done(function(data) {
+		try
+		{
+			let d=JSON.parse(data);
+			document.getElementById('mastervolume').value=d.targetvolume;
+			document.getElementById('currentmode').value=d.currentmode;
+			for(let i=0; i<d.modes.length; i++)
+			{
+				if(d.modes[i].mode>0 && d.modes[i].mode<=20)
+				{
+					let mode=d.modes[i].mode;
+					document.getElementById('stroketype'+mode).value=d.modes[i].stroketype;
+					document.getElementById('frequency'+mode).value=d.modes[i].frequency.join(',');
+					document.getElementById('spm'+mode).value=d.modes[i].spm;
+					document.getElementById('minpos'+mode).value=d.modes[i].minpos;
+					document.getElementById('maxpos'+mode).value=d.modes[i].maxpos;
+					document.getElementById('volume'+mode).value=d.modes[i].targetvolume;
+					document.getElementById('channelbalance'+mode).value=d.modes[i].channelbalance;
+					document.getElementById('ampshift'+mode).value=d.modes[i].ampshift;
+					document.getElementById('phaseshift'+mode).value=d.modes[i].phaseshift;
+				}
+			}
+		}
+		catch(e)
+		{
+			console.log('Error parsing JSON');
+		}
+		
+	});
+  }
+  
+  document.getElementById('updatemaster').addEventListener('click', clickUpdateMaster, false);
+  document.getElementById('updateconfig').addEventListener('click', clickUpdateConfig, false);
+  document.getElementById('updateconfig2').addEventListener('click', clickUpdateConfig, false);
+  
+  refreshConfig();
+  
+</script>
+</body>
+</html>
