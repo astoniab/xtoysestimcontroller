@@ -9,12 +9,14 @@
 #include "httpserver.h"
 #include "estimsignaloutput.h"
 #include "miscfunctions.h"
+#include "udpsignalhandler.h"
 
 struct programoptions
 {
 	int64_t deviceidx;
 	std::string listenaddress;
 	std::string listenport;
+	bool listenudp;
 };
 
 std::atomic<bool> running = false;
@@ -78,6 +80,7 @@ void printoptions()
 	std::cout << "-d [devid]             Use device id as audio output" << std::endl;
 	std::cout << "-h [ip | hostname]     Bind HTTP service to ip or hostname" << std::endl;
 	std::cout << "-p [port]              Bind HTTP service to port" << std::endl;
+	std::cout << "-u                     Listen to UDP for FemDomination tease" << std::endl;
 	std::cout << "-list                  List available audio output devices" << std::endl;
 }
 
@@ -92,6 +95,7 @@ int main(int argc, char* argv[])
 	opts.deviceidx = 0;
 	opts.listenaddress = "0.0.0.0";
 	opts.listenport = "8082";
+	opts.listenudp = false;
 
 	running = true;
 
@@ -119,6 +123,11 @@ int main(int argc, char* argv[])
 			opts.listenport = std::string(argv[i + 1]);
 			i += 2;
 		}
+		else if (arg == "-u")
+		{
+			opts.listenudp = true;
+			i += 1;
+		}
 		else if (arg == "-list")
 		{
 			listaudiodevices();
@@ -142,6 +151,12 @@ int main(int argc, char* argv[])
 	http.Start(opts.listenaddress, opts.listenport);
 
 	std::cout << "Listening at http://" << opts.listenaddress << ":" << opts.listenport << std::endl;
+
+	UDPSignalHandler udp;
+	if (opts.listenudp == true)
+	{
+		udp.Start();
+	}
 
 	EstimSignalOutput sig;
 	sig.Start(opts.deviceidx, 48000);
@@ -428,6 +443,12 @@ int main(int argc, char* argv[])
 
 			});
 
+			udp.SetPositionFunction([&sig](int64_t pos)->void
+				{
+					sig.SetEventStrokeParameters(EstimSignalOutput::MODE_STROKE2, 120, pos, pos);
+					sig.SetMode(EstimSignalOutput::MODE_STROKE2);
+				});
+
 	do
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -437,12 +458,17 @@ int main(int argc, char* argv[])
 
 	http.Stop();
 	sig.Stop();
+	udp.Stop();
 
 	while(http.IsRunning())
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	};
 	while (sig.IsRunning())
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
+	while (udp.IsRunning())
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}

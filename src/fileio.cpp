@@ -40,6 +40,7 @@ const bool FileIO::ReadInt8(int8_t& val)
 		size_t len = fread(&val, 1, 1, m_file);
 		return len == 1;
 	}
+	return false;
 }
 
 const bool FileIO::ReadUInt8(uint8_t& val)
@@ -49,6 +50,7 @@ const bool FileIO::ReadUInt8(uint8_t& val)
 		size_t len = fread(&val, 1, 1, m_file);
 		return len == 1;
 	}
+	return false;
 }
 
 const bool FileIO::ReadInt32(int32_t& val)

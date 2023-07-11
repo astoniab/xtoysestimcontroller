@@ -139,6 +139,7 @@ public:
 	const int64_t GetTargetVolume() const;
 	const int64_t GetStrokesRemaining(const int mode) const;
 	const int64_t GetStrokeRate(const int mode) const;
+	const int64_t GetCurrentStrokePosition(const int mode) const;
 	void GetStrokeParameters(std::vector<StrokeParameters>& params);
 
 	static void GetAudioDevices(std::map<int64_t, std::string>& devices);

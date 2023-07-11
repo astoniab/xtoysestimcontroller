@@ -15,6 +15,7 @@ src/httpserver.cpp
 src/main.cpp
 src/miscfunctions.cpp
 src/mongoose.c
+src/udpsignalhandler.cpp
 )
 
 ADD_EXECUTABLE(xtoysestimcontroller ${CONTROLLER_SRC})

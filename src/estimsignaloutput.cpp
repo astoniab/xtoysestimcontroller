@@ -233,7 +233,7 @@ void EstimSignalOutput::SetEventStrokeParameters(const int mode, const int64_t s
 		strokeparameters.strokerate = sr;
 		if (minp > -1 && maxp > -1)
 		{
-			strokeparameters.eventminstrokepos = std::max(0ll,minp);
+			strokeparameters.eventminstrokepos = std::min(std::max(0ll, minp), 100ll);
 			strokeparameters.eventmaxstrokepos = std::max(std::min(100ll, maxp), strokeparameters.eventminstrokepos);
 		}
 
@@ -273,6 +273,16 @@ const int64_t EstimSignalOutput::GetStrokeRate(const int mode) const
 	{
 		StrokeParameters sp = m_strokeparameters[mode];
 		return sp.strokerate;
+	}
+	return 0;
+}
+
+const int64_t EstimSignalOutput::GetCurrentStrokePosition(const int mode) const
+{
+	if (mode >= 0 && mode < MODE_MAX)
+	{
+		StrokeParameters sp = m_strokeparameters[mode];
+		return sp.currentstrokepos;
 	}
 	return 0;
 }
@@ -633,7 +643,8 @@ void EstimSignalOutput::StrokeParameters::GetSample(double& left, double& right)
 		double smoothedleftstrokepos = currentstrokepos;
 		double smoothedrightstrokepos = rightstrokepos;
 		
-		if (currentstrokepos >= CalculatedMinStrokePos() && currentstrokepos <= CalculatedMaxStrokePos() && rightstrokepos >= CalculatedMinStrokePos() && rightstrokepos <= CalculatedMaxStrokePos())
+		// smooth stroke only if we're betwee the min and the max (and min and max aren't the same value)
+		if (currentstrokepos >= CalculatedMinStrokePos() && currentstrokepos <= CalculatedMaxStrokePos() && rightstrokepos >= CalculatedMinStrokePos() && rightstrokepos <= CalculatedMaxStrokePos() && (CalculatedMinStrokePos()!=CalculatedMaxStrokePos()))
 		{
 			// TODO - smooth pos with sin function
 			// TODO - only do if currentpos is within min and max pos
@@ -695,7 +706,7 @@ void EstimSignalOutput::StrokeParameters::IncrementStrokePosition(const int64_t 
 		}
 		else if (strokesremaining == 0 && FlagSet(FLAG_COUNTEDSTROKE) == true)	// make sure we're at minimum position if no more strokes in counted mode
 		{
-			const double rate = M_PI / static_cast<double>(samplerate);		// pos 0-100 in 1 second
+			const double rate = 100.0 / static_cast<double>(samplerate);		// pos 0-100 in 1 second
 			if (currentstrokepos > CalculatedMinStrokePos())
 			{
 				currentstrokepos -= rate;
@@ -736,10 +747,10 @@ void EstimSignalOutput::StrokeParameters::IncrementStrokePosition(const int64_t 
 	}
 	else if (currentstrokepos != static_cast<double>(CalculatedMaxStrokePos()))	// no stroking - just one position and we're not yet at that position - move to it
 	{
-		double rate = M_PI / static_cast<double>(samplerate);		// pos 0-100 in 1 second
+		double rate = 100.0 / static_cast<double>(samplerate);		// pos 0-100 in 1 second
 		if (strokerate > 0)	// if we have a stroke rate, then use that to compute the rate
 		{
-			rate = M_PI * static_cast<double>(strokerate) / 60.0 / static_cast<double>(samplerate);
+			rate = 100.0 * static_cast<double>(strokerate) / 60.0 / static_cast<double>(samplerate);
 		}
 		if (currentstrokepos > static_cast<double>(CalculatedMaxStrokePos()))	// reduce until we get to the expected value
 		{
