@@ -256,8 +256,8 @@ int main(int argc, char* argv[])
 					}
 					result += "]";
 					result += ",\"spm\":" + std::to_string(params[i].strokerate);
-					result += ",\"minpos\":" + std::to_string(params[i].minstrokepos);
-					result += ",\"maxpos\":" + std::to_string(params[i].maxstrokepos);
+					result += ",\"minpos\":" + std::to_string(params[i].modeminstrokepos);
+					result += ",\"maxpos\":" + std::to_string(params[i].modemaxstrokepos);
 					result += ",\"currentvolume\":" + std::to_string(static_cast<int64_t>(params[i].currentampmult * 100.0));
 					result += ",\"targetvolume\":" + std::to_string(static_cast<int64_t>(params[i].targetampmult * 100.0));
 					result += ",\"channelbalance\":" + std::to_string(params[i].channelbalance);
@@ -317,7 +317,8 @@ int main(int argc, char* argv[])
 						if (sig.GetStrokeRate(EstimSignalOutput::MODE_COUNTEDSTROKE1) < 360)
 						{
 							int64_t adj = (rem == 2 ? 10 : 30);
-							sig.SetStrokeParameters(EstimSignalOutput::MODE_COUNTEDSTROKE1, -1, std::vector<int64_t>(), sig.GetStrokeRate(EstimSignalOutput::MODE_COUNTEDSTROKE1) + adj, -1, -1, -1, -1, -10000, -10000);
+							//sig.SetStrokeParameters(EstimSignalOutput::MODE_COUNTEDSTROKE1, -1, std::vector<int64_t>(), sig.GetStrokeRate(EstimSignalOutput::MODE_COUNTEDSTROKE1) + adj, -1, -1, -1, -1, -10000, -10000);
+							sig.SetEventStrokeParameters(EstimSignalOutput::MODE_COUNTEDSTROKE1, sig.GetStrokeRate(EstimSignalOutput::MODE_COUNTEDSTROKE1) + adj, -1, -1);
 						}
 					}
 					else if (sig.GetStrokesRemaining(EstimSignalOutput::MODE_COUNTEDSTROKE1) < 2)
@@ -331,85 +332,101 @@ int main(int argc, char* argv[])
 						{
 							rate -= 10;
 						}
-						sig.SetStrokeParameters(EstimSignalOutput::MODE_COUNTEDSTROKE1, -1, std::vector<int64_t>(), rate, -1, -1, -1, -1, -10000, -10000);
+						//sig.SetStrokeParameters(EstimSignalOutput::MODE_COUNTEDSTROKE1, -1, std::vector<int64_t>(), rate, -1, -1, -1, -1, -10000, -10000);
+						sig.SetEventStrokeParameters(EstimSignalOutput::MODE_COUNTEDSTROKE1, rate, -1, -1);
+					}
+
+					lastrhythmtick = std::chrono::system_clock::now();
 				}
-
-				lastrhythmtick = std::chrono::system_clock::now();
-
-			}
-			else if (action == "StrokerThruster")
-			{
-				int64_t strokedepth = -1;
-				int64_t strokespeed = -1;
-				bool pattern = false;
-				bool patternedge = false;
-				bool patterntease = false;
-				std::string temp = "";
-
-				getvar(params, "strokedepth", strokedepth);
-				getvar(params, "strokespeed", strokespeed);
-				pattern = getvar(params, "strokepattern", temp);
-				patternedge = getvar(params, "strokepatternEdge", temp);
-				patterntease = getvar(params, "strokepatternTease", temp);
-
-				// pos from Virtual Succubus XToys layout for Stroker/Thruster
-				int64_t minpos = 0;
-				int64_t maxpos = 100;
-				switch (strokedepth)
+				else if (action == "RhythmFinish")	// as fast as possible
 				{
-				case 1:
-					minpos = 80;
-					maxpos = 100;
-					break;
-				case 2:
-					minpos = 60;
-					maxpos = 100;
-					break;
-				case 3:
-					minpos = 40;
-					maxpos = 70;
-					break;
-				case 4:
-					minpos = 0;
-					maxpos = 70;
-					break;
-				case 5:
-					minpos = 0;
-					maxpos = 40;
-					break;
+					sig.SetEventStrokeParameters(EstimSignalOutput::MODE_COUNTEDSTROKE1, 360, -1, -1);
+					sig.SetMode(EstimSignalOutput::MODE_COUNTEDSTROKE1);
+					sig.AddStrokes(EstimSignalOutput::MODE_COUNTEDSTROKE1, 100000);
 				}
-
-				if (patternedge == true)
+				else if (action == "StrokerThruster")
 				{
-					int mode = EstimSignalOutput::MODE_EDGE1;
-					switch (edgetype)
+
+					int64_t strokedepth = -1;
+					int64_t strokespeed = -1;
+					bool pattern = false;
+					bool patternedge = false;
+					bool patterntease = false;
+					bool patternride = false;
+					std::string temp = "";
+
+					getvar(params, "strokedepth", strokedepth);
+					getvar(params, "strokespeed", strokespeed);
+					pattern = getvar(params, "strokepattern", temp);
+					patternedge = getvar(params, "strokepatternEdge", temp);
+					patternride = getvar(params, "strokepatternEdgeRide", temp);
+					patterntease = getvar(params, "strokepatternTease", temp);
+
+					// pos from Virtual Succubus XToys layout for Stroker/Thruster
+					int64_t eventminpos = 0;
+					int64_t eventmaxpos = 100;
+					switch (strokedepth)
 					{
 					case 1:
-						mode = EstimSignalOutput::MODE_EDGE1;
+						eventminpos = 80;
+						eventmaxpos = 100;
 						break;
 					case 2:
-						mode = EstimSignalOutput::MODE_EDGE2;
+						eventminpos = 60;
+						eventmaxpos = 100;
+						break;
+					case 3:
+						eventminpos = 40;
+						eventmaxpos = 70;
+						break;
+					case 4:
+						eventminpos = 0;
+						eventmaxpos = 70;
+						break;
+					case 5:
+						eventminpos = 0;
+						eventmaxpos = 40;
 						break;
 					}
-					std::vector<int64_t> freq;	// empy vector - no change to frequencies
-					sig.SetStrokeParameters(mode, -1, freq, strokespeed, minpos, maxpos, -1, -1, -10000, -10000);
-					sig.SetMode(mode);
-				}
-				else if (patterntease == true)
-				{
-					std::vector<int64_t> freq;	// empy vector - no change to frequencies
-					sig.SetStrokeParameters(EstimSignalOutput::MODE_TEASING1, -1, freq, strokespeed, minpos, maxpos, -1, -1, -10000, -10000);
-					sig.SetMode(EstimSignalOutput::MODE_TEASING1);
-				}
-				else
-				{
-					std::vector<int64_t> freq;	// empy vector - no change to frequencies
-					sig.SetStrokeParameters(EstimSignalOutput::MODE_STROKE1, -1, freq, strokespeed, minpos, maxpos, -1, -1, -10000, -10000);
-					sig.SetMode(EstimSignalOutput::MODE_STROKE1);
-				}
-			}
 
-		});
+					if (patternedge == true)
+					{
+						int mode = EstimSignalOutput::MODE_EDGE1;
+						switch (edgetype)
+						{
+						case 1:
+							mode = EstimSignalOutput::MODE_EDGE1;
+							break;
+						case 2:
+							mode = EstimSignalOutput::MODE_EDGE2;
+							break;
+						}
+						std::vector<int64_t> freq;	// empy vector - no change to frequencies
+						//sig.SetStrokeParameters(mode, -1, freq, strokespeed, minpos, maxpos, -1, -1, -10000, -10000);
+						sig.SetEventStrokeParameters(mode, strokespeed, eventminpos, eventmaxpos);
+						sig.SetMode(mode);
+					}
+					else if (patterntease == true)
+					{
+						std::vector<int64_t> freq;	// empy vector - no change to frequencies
+						//sig.SetStrokeParameters(EstimSignalOutput::MODE_TEASING1, -1, freq, strokespeed, minpos, maxpos, -1, -1, -10000, -10000);
+						sig.SetEventStrokeParameters(EstimSignalOutput::MODE_TEASING1, strokespeed, eventminpos, eventmaxpos);
+						sig.SetMode(EstimSignalOutput::MODE_TEASING1);
+					}
+					else if (patternride == true)
+					{
+						sig.SetMode(EstimSignalOutput::MODE_EDGE2);
+					}
+					else
+					{
+						std::vector<int64_t> freq;	// empy vector - no change to frequencies
+						//sig.SetStrokeParameters(EstimSignalOutput::MODE_STROKE1, -1, freq, strokespeed, minpos, maxpos, -1, -1, -10000, -10000);
+						sig.SetEventStrokeParameters(EstimSignalOutput::MODE_STROKE1, strokespeed, eventminpos, eventmaxpos);
+						sig.SetMode(EstimSignalOutput::MODE_STROKE1);
+					}
+				}
+
+			});
 
 	do
 	{

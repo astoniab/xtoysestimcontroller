@@ -157,8 +157,8 @@ void EstimSignalOutput::SetStrokeParameters(const int mode, const int8_t stroket
 
 		strokeparameters.stroketype = ((stroketype > -1 && stroketype < STROKE_MAX) ? stroketype : strokeparameters.stroketype);
 		const int64_t sr = (strokerate > -1 ? strokerate : strokeparameters.strokerate);
-		const int64_t minp = std::max(0ll, (minpos > -1 ? minpos : strokeparameters.minstrokepos));
-		const int64_t maxp = std::max(std::min(100ll, (maxpos > -1 ? maxpos : strokeparameters.maxstrokepos)), minp);
+		const int64_t minp = std::max(0ll, (minpos > -1 ? minpos : strokeparameters.modeminstrokepos));
+		const int64_t maxp = std::max(std::min(100ll, (maxpos > -1 ? maxpos : strokeparameters.modemaxstrokepos)), minp);
 		const double vol = std::max(0.0, (volume > -1 ? static_cast<double>(volume) / 100.0 : strokeparameters.targetampmult));
 		strokeparameters.channelbalance = ((channelbalance > -1 && channelbalance <= 200) ? channelbalance : strokeparameters.channelbalance);
 		strokeparameters.ampshift = ((ampshift >= -180 && ampshift <= 180) ? ampshift : strokeparameters.ampshift);
@@ -182,8 +182,16 @@ void EstimSignalOutput::SetStrokeParameters(const int mode, const int8_t stroket
 			}
 		}
 		strokeparameters.strokerate = sr;
-		strokeparameters.minstrokepos = minp;
-		strokeparameters.maxstrokepos = maxp;
+		strokeparameters.modeminstrokepos = minp;
+		strokeparameters.modemaxstrokepos = maxp;
+
+		// if min or max pos was changed - reset the event min and max pos
+		if (minpos > -1 || maxpos > -1)
+		{
+			strokeparameters.eventminstrokepos = -1;
+			strokeparameters.eventmaxstrokepos = -1;
+		}
+
 		strokeparameters.targetampmult = vol;
 
 		if (strokeparameters.targetampmult < strokeparameters.currentampmult)
@@ -202,25 +210,36 @@ void EstimSignalOutput::SetStrokeParameters(const int mode, const int8_t stroket
 			strokeparameters.leftampmult = (static_cast<double>(200 - channelbalance) / 100.0);
 		}
 
-		// stroke % per sample
-		//(strokerate / 60.0 / m_samplerate);
-
-		// 2* because we need to go back and forth for 1 complete stroke
-		strokeparameters.incstrokepos = (2.0 * static_cast<double>(strokeparameters.maxstrokepos - strokeparameters.minstrokepos)) * (static_cast<double>(strokeparameters.strokerate) / 60.0 / static_cast<double>(m_samplerate));
-		// check if current stroke pos is < 0 and make sure inc is +, check if current stroke pos is > 100 and make sure inc is -
-		if (strokeparameters.currentstrokepos < strokeparameters.minstrokepos && strokeparameters.incstrokepos < 0)
-		{
-			strokeparameters.incstrokepos = -strokeparameters.incstrokepos;
-		}
-		if (strokeparameters.currentstrokepos > strokeparameters.maxstrokepos && strokeparameters.incstrokepos > 0)
-		{
-			strokeparameters.minstrokepos = -strokeparameters.incstrokepos;
-		}
+		strokeparameters.RecalculateStrokeIncrement(m_samplerate);
 
 		m_strokeparameters[mode].store(strokeparameters);
 
-		//std::cout << "minp=" << minp << " maxp=" << maxp << " minpos=" << strokeparameters.minstrokepos << " maxpos=" << strokeparameters.maxstrokepos << std::endl;
-		//std::cout << "incpos=" << strokeparameters.incstrokepos << std::endl;
+		//std::cout << "minp=" << minp << " maxp=" << maxp << " minpos=" << strokeparameters.modeminstrokepos << " maxpos=" << strokeparameters.modemaxstrokepos << "  eminp=" << strokeparameters.modeminstrokepos << " emaxp=" << strokeparameters.modemaxstrokepos << std::endl;
+		//std::cout << "incpos=" << strokeparameters.incstrokepos << "  cmin=" << strokeparameters.CalculatedMinStrokePos() << "  cmin=" << strokeparameters.CalculatedMaxStrokePos() << std::endl;
+	}
+}
+
+void EstimSignalOutput::SetEventStrokeParameters(const int mode, const int64_t strokerate, const int64_t eventminpos, const int64_t eventmaxpos)
+{
+	if (mode >= MODE_IDLE && mode < MODE_MAX)		// make sure mode in range, caller must ensure that idle mode values aren't changed
+	{
+		std::lock_guard<std::mutex> guard(m_strokemutex);
+		StrokeParameters strokeparameters = m_strokeparameters[mode].load();
+
+		const int64_t sr = (strokerate > -1 ? strokerate : strokeparameters.strokerate);
+		const int64_t minp = (eventminpos > -1 ? eventminpos : strokeparameters.eventminstrokepos);
+		const int64_t maxp = (eventmaxpos > -1 ? eventmaxpos : strokeparameters.eventmaxstrokepos);
+
+		strokeparameters.strokerate = sr;
+		if (minp > -1 && maxp > -1)
+		{
+			strokeparameters.eventminstrokepos = std::max(0ll,minp);
+			strokeparameters.eventmaxstrokepos = std::max(std::min(100ll, maxp), strokeparameters.eventminstrokepos);
+		}
+
+		strokeparameters.RecalculateStrokeIncrement(m_samplerate);
+
+		m_strokeparameters[mode].store(strokeparameters);
 	}
 }
 
@@ -299,6 +318,7 @@ int EstimSignalOutput::SignalCallback(const void* input, void* output, unsigned 
 	float* samples = (float*)output;
 	double prevleft = std::numeric_limits<double>::max();
 	double prevright = std::numeric_limits<double>::max();
+
 	for (int64_t i = 0; i < framecount; i++)
 	{
 		const double volmult = s.m_currentvolume;
@@ -307,6 +327,7 @@ int EstimSignalOutput::SignalCallback(const void* input, void* output, unsigned 
 		const double rightvolmult = strokeparam.rightampmult;
 		double leftsample = 0;
 		double rightsample = 0;
+	
 		strokeparam.GetSample(leftsample, rightsample);
 
 		samples[0] = leftsample * volmult * strokevolmult * leftvolmult;		// * master volume * stroke volume * left channel volume
@@ -492,8 +513,8 @@ const bool EstimSignalOutput::SaveSettings(const std::string& filename)
 				file.WriteInt64(params.frequencydata[i].frequency);
 			}
 			file.WriteInt64(params.strokerate);
-			file.WriteInt64(params.minstrokepos);
-			file.WriteInt64(params.maxstrokepos);
+			file.WriteInt64(params.modeminstrokepos);
+			file.WriteInt64(params.modemaxstrokepos);
 			file.WriteInt64(params.targetampmult * 100.0);
 			file.WriteInt32(params.channelbalance);
 			file.WriteInt32(params.ampshift);
@@ -542,7 +563,8 @@ EstimSignalOutput::StrokeFrequencyPhaseData::StrokeFrequencyPhaseData() :frequen
 EstimSignalOutput::StrokeParameters::StrokeParameters() :
 	flags(0), stroketype(STROKE_FREQUENCY),
 	strokerate(0), strokesremaining(0),
-	currentstrokepos(0), maxstrokepos(0),
+	currentstrokepos(0), incstrokepos(0), modeminstrokepos(0), modemaxstrokepos(0),
+	eventminstrokepos(-1), eventmaxstrokepos(-1),
 	targetampmult(1), currentampmult(1),
 	channelbalance(100), leftampmult(1), rightampmult(1),
 	ampshift(0), phaseshift(0)
@@ -591,19 +613,19 @@ void EstimSignalOutput::StrokeParameters::GetSample(double& left, double& right)
 		double rightstrokepos = currentstrokepos;
 		
 		// check for amplitude offset and apply it to amplitude
-		if (ampshift != 0)
+		if (ampshift != 0 && CalculatedMinStrokePos()!=CalculatedMaxStrokePos())
 		{
-			const double shiftpos = (static_cast<double>(ampshift) / 180.0) * static_cast<double>(minstrokepos) * (incstrokepos < 0 ? -1.0 : 1.0);
+			const double shiftpos = (static_cast<double>(ampshift) / 180.0) * static_cast<double>(CalculatedMinStrokePos()) * (incstrokepos < 0 ? -1.0 : 1.0);
 			rightstrokepos += shiftpos;
-			while(rightstrokepos > maxstrokepos || rightstrokepos < minstrokepos)
+			while (rightstrokepos > CalculatedMaxStrokePos() || rightstrokepos < CalculatedMinStrokePos())
 			{
-				while (rightstrokepos > maxstrokepos)
+				while (rightstrokepos > CalculatedMaxStrokePos())
 				{
-					rightstrokepos = static_cast<double>(maxstrokepos) - (rightstrokepos - static_cast<double>(maxstrokepos));
+					rightstrokepos = static_cast<double>(CalculatedMaxStrokePos()) - (rightstrokepos - static_cast<double>(CalculatedMaxStrokePos()));
 				}
-				while (rightstrokepos < minstrokepos)
+				while (rightstrokepos < CalculatedMinStrokePos())
 				{
-					rightstrokepos = static_cast<double>(minstrokepos) + (static_cast<double>(minstrokepos) - rightstrokepos);
+					rightstrokepos = static_cast<double>(CalculatedMinStrokePos()) + (static_cast<double>(CalculatedMinStrokePos()) - rightstrokepos);
 				}
 			}
 		}
@@ -611,14 +633,14 @@ void EstimSignalOutput::StrokeParameters::GetSample(double& left, double& right)
 		double smoothedleftstrokepos = currentstrokepos;
 		double smoothedrightstrokepos = rightstrokepos;
 		
-		if (currentstrokepos >= minstrokepos && currentstrokepos <= maxstrokepos && rightstrokepos >= minstrokepos && rightstrokepos <= maxstrokepos)
+		if (currentstrokepos >= CalculatedMinStrokePos() && currentstrokepos <= CalculatedMaxStrokePos() && rightstrokepos >= CalculatedMinStrokePos() && rightstrokepos <= CalculatedMaxStrokePos())
 		{
 			// TODO - smooth pos with sin function
 			// TODO - only do if currentpos is within min and max pos
 			//sinf(((current-min)/range)*M_PI)
-			const double strokerange = static_cast<double>(maxstrokepos - minstrokepos);
+			const double strokerange = static_cast<double>(CalculatedMaxStrokePos() - CalculatedMinStrokePos());
 			const double strokehalfrange = strokerange / 2.0;
-			const double strokemidpos = static_cast<double>(maxstrokepos + minstrokepos) / 2.0;
+			const double strokemidpos = static_cast<double>(CalculatedMaxStrokePos() + CalculatedMinStrokePos()) / 2.0;
 
 			// this gives smoothed "hills" with the valleys being sharp because we're always in the 1st or 2nd quadrant
 			//const double leftsin = sinf(((currentstrokepos - static_cast<double>(minstrokepos)) / (strokerange)) * M_PI);
@@ -664,21 +686,41 @@ void EstimSignalOutput::StrokeParameters::IncrementPhase()
 
 void EstimSignalOutput::StrokeParameters::IncrementStrokePosition(const int64_t samplerate)
 {
-	if (minstrokepos != maxstrokepos)	// stroking between min and max
+	if (CalculatedMinStrokePos() != CalculatedMaxStrokePos())	// stroking between min and max
 	{
 		// only increment the stroke position if we're not in counted mode, or strokes remaining > 0
 		if (strokesremaining > 0 || FlagSet(FLAG_COUNTEDSTROKE) == false)
 		{
 			currentstrokepos += incstrokepos;
 		}
-		if (incstrokepos > 0 && currentstrokepos > static_cast<double>(maxstrokepos))
+		else if (strokesremaining == 0 && FlagSet(FLAG_COUNTEDSTROKE) == true)	// make sure we're at minimum position if no more strokes in counted mode
 		{
-			currentstrokepos = static_cast<double>(maxstrokepos) - (currentstrokepos - static_cast<double>(maxstrokepos));
+			const double rate = M_PI / static_cast<double>(samplerate);		// pos 0-100 in 1 second
+			if (currentstrokepos > CalculatedMinStrokePos())
+			{
+				currentstrokepos -= rate;
+				if (currentstrokepos < CalculatedMinStrokePos())
+				{
+					currentstrokepos = CalculatedMinStrokePos();
+				}
+			}
+			if (currentstrokepos < CalculatedMinStrokePos())
+			{
+				currentstrokepos += rate;
+				if (currentstrokepos > CalculatedMinStrokePos())
+				{
+					currentstrokepos = CalculatedMinStrokePos();
+				}
+			}
+		}
+		if (incstrokepos > 0 && currentstrokepos > static_cast<double>(CalculatedMaxStrokePos()))
+		{
+			currentstrokepos = static_cast<double>(CalculatedMaxStrokePos()) - (currentstrokepos - static_cast<double>(CalculatedMaxStrokePos()));
 			incstrokepos = -incstrokepos;
 		}
-		if (incstrokepos < 0 && currentstrokepos < static_cast<double>(minstrokepos))
+		if (incstrokepos < 0 && currentstrokepos < static_cast<double>(CalculatedMinStrokePos()))
 		{
-			currentstrokepos = static_cast<double>(minstrokepos) + (static_cast<double>(minstrokepos) - currentstrokepos);
+			currentstrokepos = static_cast<double>(CalculatedMinStrokePos()) + (static_cast<double>(CalculatedMinStrokePos()) - currentstrokepos);
 			incstrokepos = -incstrokepos;
 			// we've reached the bottom of the stroke, so remove one from remaining stroke count (if set)
 			if (strokesremaining > 0)
@@ -688,32 +730,90 @@ void EstimSignalOutput::StrokeParameters::IncrementStrokePosition(const int64_t 
 			// if we're in counted mode at the bottom of a stroke and no more left, make sure position stays at bottom
 			if (strokesremaining == 0 && FlagSet(FLAG_COUNTEDSTROKE))
 			{
-				currentstrokepos = 0.0;
+				currentstrokepos = CalculatedMinStrokePos();
 			}
 		}
 	}
-	else if (currentstrokepos != static_cast<double>(maxstrokepos))	// no stroking - just one position and we're not yet at that position - move to it
+	else if (currentstrokepos != static_cast<double>(CalculatedMaxStrokePos()))	// no stroking - just one position and we're not yet at that position - move to it
 	{
 		double rate = M_PI / static_cast<double>(samplerate);		// pos 0-100 in 1 second
 		if (strokerate > 0)	// if we have a stroke rate, then use that to compute the rate
 		{
 			rate = M_PI * static_cast<double>(strokerate) / 60.0 / static_cast<double>(samplerate);
 		}
-		if (currentstrokepos > static_cast<double>(maxstrokepos))	// reduce until we get to the expected value
+		if (currentstrokepos > static_cast<double>(CalculatedMaxStrokePos()))	// reduce until we get to the expected value
 		{
 			currentstrokepos -= rate;
-			if (currentstrokepos < static_cast<double>(maxstrokepos))
+			if (currentstrokepos < static_cast<double>(CalculatedMaxStrokePos()))
 			{
-				currentstrokepos = maxstrokepos;
+				currentstrokepos = CalculatedMaxStrokePos();
 			}
 		}
-		else if (currentstrokepos < static_cast<double>(minstrokepos))	// increase until we get to the expected value
+		else if (currentstrokepos < static_cast<double>(CalculatedMinStrokePos()))	// increase until we get to the expected value
 		{
 			currentstrokepos += rate;
-			if (currentstrokepos > static_cast<double>(minstrokepos))
+			if (currentstrokepos > static_cast<double>(CalculatedMinStrokePos()))
 			{
-				currentstrokepos = static_cast<double>(minstrokepos);
+				currentstrokepos = static_cast<double>(CalculatedMinStrokePos());
 			}
 		}
 	}
+}
+
+void EstimSignalOutput::StrokeParameters::RecalculateStrokeIncrement(const int64_t samplerate)
+{
+	// stroke % per sample
+	//(strokerate / 60.0 / m_samplerate);
+
+	// 2* because we need to go back and forth for 1 complete stroke
+	incstrokepos = (2.0 * static_cast<double>(CalculatedMaxStrokePos() - CalculatedMinStrokePos())) * (static_cast<double>(strokerate) / 60.0 / static_cast<double>(samplerate));
+	// check if current stroke pos is < minpos and make sure inc is +, check if current stroke pos is > maxpos and make sure inc is -
+	if (currentstrokepos < CalculatedMinStrokePos() && incstrokepos < 0)
+	{
+		incstrokepos = -incstrokepos;
+	}
+	if (currentstrokepos > CalculatedMaxStrokePos() && incstrokepos > 0)
+	{
+		incstrokepos = -incstrokepos;
+	}
+}
+
+int64_t EstimSignalOutput::StrokeParameters::CalculatedMinStrokePos() const
+{
+	if (stroketype == STROKE_FREQUENCY)
+	{
+		return (eventminstrokepos > -1 ? eventminstrokepos : modeminstrokepos);
+	}
+	else if (stroketype == STROKE_AMPLITUDE)	// amplitude scaled to between mode min and max
+	{
+		if (eventminstrokepos > -1 && eventmaxstrokepos > -1)
+		{
+			return modeminstrokepos + (static_cast<double>(modemaxstrokepos - modeminstrokepos) * static_cast<double>(eventminstrokepos) / 100.0);
+		}
+		else
+		{
+			return modeminstrokepos;
+		}
+	}
+	return 0;
+}
+
+int64_t EstimSignalOutput::StrokeParameters::CalculatedMaxStrokePos() const
+{
+	if (stroketype == STROKE_FREQUENCY)
+	{
+		return (eventmaxstrokepos > -1 ? eventmaxstrokepos : modemaxstrokepos);
+	}
+	else if (stroketype == STROKE_AMPLITUDE)	// amplitude scaled to between mode min and max
+	{
+		if (eventminstrokepos > -1 && eventmaxstrokepos > -1)
+		{
+			return modeminstrokepos + (static_cast<double>(modemaxstrokepos - modeminstrokepos) * static_cast<double>(eventmaxstrokepos) / 100.0);
+		}
+		else
+		{
+			return modemaxstrokepos;
+		}
+	}
+	return 0;
 }

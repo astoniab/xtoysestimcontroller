@@ -22,6 +22,7 @@ public:
 
 	void SetCurrentModeStrokeParameters(const int8_t stroketype, const std::vector<int64_t> frequencies, const int64_t strokerate, const int64_t minpos, const int64_t maxpos, const int64_t volume, const int32_t balance, const int32_t ampshift, const int32_t phaseshift);
 	void SetStrokeParameters(const int mode, const int8_t stroketype, const std::vector<int64_t> frequencies, const int64_t strokerate, const int64_t minpos, const int64_t maxpos, const int64_t volume, const int32_t balance, const int32_t ampshift, const int32_t phaseshift);
+	void SetEventStrokeParameters(const int mode, const int64_t strokerate, const int64_t eventminpos, const int64_t eventmaxpos);
 	void AddStrokes(const int mode, const int64_t strokes);
 	void SetMasterVolume(const int64_t volume);
 	void SetMode(const int mode);
@@ -95,9 +96,14 @@ public:
 
 		void GetSample(double& left, double& right) const;
 
+		void RecalculateStrokeIncrement(const int64_t samplerate);		// recalculates and sets incstrokepos based on current parameters
+
 		void ResetPhase();
 		void IncrementPhase();
 		void IncrementStrokePosition(const int64_t samplerate);
+
+		int64_t CalculatedMinStrokePos() const;
+		int64_t CalculatedMaxStrokePos() const;
 
 		uint8_t flags;
 		int8_t stroketype;
@@ -107,8 +113,11 @@ public:
 		int64_t strokerate;			// strokes per minute
 		int64_t strokesremaining;	// in counted mode, how many strokes are left
 
-		int64_t minstrokepos;		// 0 - 100
-		int64_t maxstrokepos;		// 0 - 100
+		int64_t modeminstrokepos;		// 0 - 100
+		int64_t modemaxstrokepos;		// 0 - 100
+
+		int64_t eventminstrokepos;		// for VS stroke event only (not saved) - used for AM stroke type
+		int64_t eventmaxstrokepos;		// for VS stroke event only (not saved) - used for AM stroke type
 
 		double currentstrokepos;	// 0 - 100
 		double incstrokepos;		// + or - value to add to current pos each sample (then reversed when passes min or max)
