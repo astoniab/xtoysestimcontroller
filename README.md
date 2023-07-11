@@ -30,7 +30,7 @@ After changing values for any of the modes, you must click the Update button und
 Below the Virtual Succubus modes are generic user modes you can use to experiment or play around with.
 
 To intercept the web calls to XToys, you will need to setup a proxy.  [mitmproxy](https://mitmproxy.org/) works well for this purpose.
-```mitmproxy --mode transparent --map-remote "|http(s)?\://.*xtoys.app|http://localhost:8082```
+```mitmproxy --mode transparent --map-remote "|http(s)?\://.*xtoys.app|http://localhost:8082"```
 That will intercept all web calls to xtoys.app and forward them to the local xtoysestimcontroller instance.  You may need to change the port or IP if you've specified them on the command line when starting xtoysestimcontroller.
 
 After you have xtoysestimcontroller running and the modes configured, and the proxy set up to intercept the web calls, you can open Virtual Succubus and set up the Bluetooth toys section.  You can turn on the rhythm, teasing, punishment options in the Virtual Succubus settings.  There are buttons to test some of the modes available, and you can make sure they're working.  After everything is tested you can enjoy your estim session.
