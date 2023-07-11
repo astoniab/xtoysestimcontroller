@@ -1,16 +1,16 @@
 # XToys E-Stim Controller
 
-A utility for stereostim users who play Virtual Succubus to intercept the calls to XToys and convert them into stroke signals output to your stereostim.  It can also be used as a standalone utility for stereostim play.
+A utility for stereostim users who play Virtual Succubus to intercept the calls to XToys and convert them into stroke signals output to your stereostim.  It will also handle the E-Stim scene in FemDomination.  It can also be used as a standalone utility for stereostim play.
 
 ## Use
 
-You should start xtoysestimcontroller from the command line.  If you're running in Windows you will need to start the process with Administrator access, otherwise the process will not have access to the audio hardware.  You can add -? to the command line to see all available options.  At a minimum, you will need to specify the audio device to output to with -d [devid].  You can see the list of available audio output devices with -list.
+You should start xtoysestimcontroller from the command line.  If you're running in Windows you will need to start the process with Administrator access, otherwise the process will not have access to the audio hardware.  You can add ```-?``` to the command line to see all available options.  At a minimum, you will need to specify the audio device to output to with ```-d [devid]```.  You can see the list of available audio output devices with ```-list```.  If you want to run the FemDomination scene, you can pass ```-u``` on the command line to listen for the UDP packets from FemDomination.
 
 When xtoysestimcontroller is running, you can open a browser to http://localhost:8082 (or the IP and port you've specified on the command line).
 
 In the web interface, there will be a master volume and a drop down to select the currently playing estim mode.  If you change either of these, they will only take effect when you click the Update button.
 
-Below that are the modes used for Virtual Succubus.  Hovering over the row heading will explain which Virtual Succubus event will trigger that mode.  Note that some modes are not currently used by Virtual Succubus (most of the 2nd modes).
+Below that are the modes used for Virtual Succubus.  Hovering over the row heading will explain which Virtual Succubus event will trigger that mode.  Note that some modes are not currently used by Virtual Succubus (most of the 2nd modes).  FemDomination only uses the Stroke 2 mode.
 
 Each mode has several options available.
 
