@@ -10,7 +10,7 @@
 #endif
 
 //debug
-#include <iostream>
+//#include <iostream>
 
 UDPSignalHandler::UDPSignalHandler() : m_setpositionfunction(nullptr)
 {
@@ -72,7 +72,7 @@ void UDPSignalHandler::Run()
 	sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	bind(sock, res->ai_addr, res->ai_addrlen);
 
-	std::cout << "socket=" << sock << std::endl;
+	//std::cout << "socket=" << sock << std::endl;
 
 	freeaddrinfo(res);
 	do
@@ -92,7 +92,7 @@ void UDPSignalHandler::Run()
 				if (len > 0)
 				{
 					buff[len] = '\0';
-					std::cout << "got " << buff << std::endl;
+					//std::cout << "got " << buff << std::endl;
 
 					double val = 0;
 					std::istringstream istr((std::string(buff)));

@@ -776,6 +776,8 @@ void EstimSignalOutput::StrokeParameters::RecalculateStrokeIncrement(const int64
 	// stroke % per sample
 	//(strokerate / 60.0 / m_samplerate);
 
+	const double origincstrokepos = incstrokepos;
+
 	// 2* because we need to go back and forth for 1 complete stroke
 	incstrokepos = (2.0 * static_cast<double>(CalculatedMaxStrokePos() - CalculatedMinStrokePos())) * (static_cast<double>(strokerate) / 60.0 / static_cast<double>(samplerate));
 	// check if current stroke pos is < minpos and make sure inc is +, check if current stroke pos is > maxpos and make sure inc is -
@@ -784,6 +786,12 @@ void EstimSignalOutput::StrokeParameters::RecalculateStrokeIncrement(const int64
 		incstrokepos = -incstrokepos;
 	}
 	if (currentstrokepos > CalculatedMaxStrokePos() && incstrokepos > 0)
+	{
+		incstrokepos = -incstrokepos;
+	}
+
+	// if we're in stroke mode and we're doing a stroke - make sure that the +/- is the same as before to complete the previous stroke correctly
+	if (strokesremaining > 0 && ((origincstrokepos < 0 && incstrokepos>0) || (origincstrokepos > 0 && incstrokepos < 0)))
 	{
 		incstrokepos = -incstrokepos;
 	}

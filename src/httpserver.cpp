@@ -113,6 +113,7 @@ void HTTPServer::EventHandler(mg_connection* conn, int ev, void* ev_data, void* 
 			t.GetQueryVar(&m->query, "strokespeed", params);
 			t.GetQueryVar(&m->query, "strokepattern", params);
 			t.GetQueryVar(&m->query, "strokepatternEdge", params);
+			t.GetQueryVar(&m->query, "strokepatternEdgeRide", params);
 			t.GetQueryVar(&m->query, "strokepatternTease", params);
 
 			if (t.m_webhookfunction)
